@@ -1,0 +1,40 @@
+\begin{sphinxtheindex}
+\let\bigletter\sphinxstyleindexlettergroup
+\let\spxpagem \sphinxstyleindexpagemain
+\let\spxentry \sphinxstyleindexentry
+\let\spxextra \sphinxstyleindexextra
+
+  \bigletter B
+  \item \spxentry{BKT}\spxextra{class in bkt}, \hyperpage{1}
+  \item \spxentry{bkt}\spxextra{module}, \hyperpage{1}
+
+  \indexspace
+  \bigletter D
+  \item \spxentry{download()}\spxextra{bkt.BKT method}, \hyperpage{1}
+
+  \indexspace
+  \bigletter F
+  \item \spxentry{fit()}\spxextra{bkt.BKT method}, \hyperpage{1}
+
+  \indexspace
+  \bigletter G
+  \item \spxentry{get\_params()}\spxextra{bkt.BKT method}, \hyperpage{1}
+
+  \indexspace
+  \bigletter P
+  \item \spxentry{predict()}\spxextra{bkt.BKT method}, \hyperpage{2}
+  \item \spxentry{predict\_proba()}\spxextra{bkt.BKT method}, \hyperpage{2}
+
+  \indexspace
+  \bigletter R
+  \item \spxentry{random\_MN\_draw()}\spxextra{simulate\_student.SimulateStudent method}, 
+		\hyperpage{3}
+
+  \indexspace
+  \bigletter S
+  \item \spxentry{set\_params()}\spxextra{bkt.BKT method}, \hyperpage{2}
+  \item \spxentry{simulate()}\spxextra{simulate\_student.SimulateStudent method}, \hyperpage{3}
+  \item \spxentry{simulate\_student}\spxextra{module}, \hyperpage{3}
+  \item \spxentry{SimulateStudent}\spxextra{class in simulate\_student}, \hyperpage{3}
+
+\end{sphinxtheindex}
