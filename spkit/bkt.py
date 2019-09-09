@@ -9,7 +9,7 @@ import re
 import logging
 import logging.config
 
-logging.config.fileConfig(fname='file.conf', disable_existing_loggers=False)
+#logging.config.fileConfig(fname='file.conf', disable_existing_loggers=False)
 
 # Get the logger specified in the file
 LOGGER = logging.getLogger(__name__)
