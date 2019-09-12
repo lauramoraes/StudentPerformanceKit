@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>bkt module &mdash; Machine Teaching  documentation</title>
+  <title>spkit package &mdash; Machine Teaching  documentation</title>
   
 
   
@@ -34,7 +34,8 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="setup module" href="setup.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -79,9 +80,15 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="setup.html">setup module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="spkit.html">spkit package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">spkit package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-spkit.bkt">spkit.bkt module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-spkit.simulate_student">spkit.simulate_student module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-spkit">Module contents</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -127,13 +134,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>bkt module</li>
+      <li>spkit package</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/bkt.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/spkit.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -146,15 +153,20 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-bkt">
-<span id="bkt-module"></span><h1>bkt module<a class="headerlink" href="#module-bkt" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="spkit-package">
+<h1>spkit package<a class="headerlink" href="#spkit-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-spkit.bkt">
+<span id="spkit-bkt-module"></span><h2>spkit.bkt module<a class="headerlink" href="#module-spkit.bkt" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="bkt.BKT">
-<em class="property">class </em><code class="sig-prename descclassname">bkt.</code><code class="sig-name descname">BKT</code><span class="sig-paren">(</span><em class="sig-param">hmm_folder='hmm-scalable-818d905234a8600a8e3a65bb0f7aa4cf06423f1a'</em>, <em class="sig-param">git_commit='818d905234a8600a8e3a65bb0f7aa4cf06423f1a'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bkt.html#BKT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bkt.BKT" title="Permalink to this definition">¶</a></dt>
+<dt id="spkit.bkt.BKT">
+<em class="property">class </em><code class="sig-prename descclassname">spkit.bkt.</code><code class="sig-name descname">BKT</code><span class="sig-paren">(</span><em class="sig-param">hmm_folder='hmm-scalable-818d905234a8600a8e3a65bb0f7aa4cf06423f1a'</em>, <em class="sig-param">git_commit='818d905234a8600a8e3a65bb0f7aa4cf06423f1a'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/bkt.html#BKT"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.bkt.BKT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
-<dt id="bkt.BKT.download">
-<code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bkt.html#BKT.download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bkt.BKT.download" title="Permalink to this definition">¶</a></dt>
+<dt id="spkit.bkt.BKT.download">
+<code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/bkt.html#BKT.download"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.bkt.BKT.download" title="Permalink to this definition">¶</a></dt>
 <dd><p>This implementation is a wrapper around the
 HMM-scalable tool ( <a class="reference external" href="http://yudelson.info/hmm-scalable">http://yudelson.info/hmm-scalable</a>).
 This function will download and install the original implementation.</p>
@@ -172,8 +184,8 @@ This function will download and install the original implementation.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="bkt.BKT.fit">
-<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">q_matrix</em>, <em class="sig-param">solver='bw'</em>, <em class="sig-param">iterations=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bkt.html#BKT.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bkt.BKT.fit" title="Permalink to this definition">¶</a></dt>
+<dt id="spkit.bkt.BKT.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">q_matrix</em>, <em class="sig-param">solver='bw'</em>, <em class="sig-param">iterations=200</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/bkt.html#BKT.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.bkt.BKT.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit BKT model to data.
 As of July 2019, just default parameters are allowed.</p>
 <dl class="field-list simple">
@@ -207,8 +219,8 @@ correspondent cell should contain 1, otherwise, 0.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="bkt.BKT.get_params">
-<code class="sig-name descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bkt.html#BKT.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bkt.BKT.get_params" title="Permalink to this definition">¶</a></dt>
+<dt id="spkit.bkt.BKT.get_params">
+<code class="sig-name descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/bkt.html#BKT.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.bkt.BKT.get_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get fitted params.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -221,8 +233,8 @@ correspondent cell should contain 1, otherwise, 0.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="bkt.BKT.predict">
-<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">q_matrix</em>, <em class="sig-param">model_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bkt.html#BKT.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bkt.BKT.predict" title="Permalink to this definition">¶</a></dt>
+<dt id="spkit.bkt.BKT.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">q_matrix</em>, <em class="sig-param">model_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/bkt.html#BKT.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.bkt.BKT.predict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Predict student outcomes based on trained model. This is just the
 hard-assigment (highest probability) of the outcome probabilities.</p>
 <dl class="field-list simple">
@@ -246,8 +258,8 @@ HMM-scalable tool (<a class="reference external" href="http://yudelson.info/hmm-
 </dd></dl>
 
 <dl class="method">
-<dt id="bkt.BKT.predict_proba">
-<code class="sig-name descname">predict_proba</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">q_matrix</em>, <em class="sig-param">learning_state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bkt.html#BKT.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bkt.BKT.predict_proba" title="Permalink to this definition">¶</a></dt>
+<dt id="spkit.bkt.BKT.predict_proba">
+<code class="sig-name descname">predict_proba</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">q_matrix</em>, <em class="sig-param">learning_state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/bkt.html#BKT.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.bkt.BKT.predict_proba" title="Permalink to this definition">¶</a></dt>
 <dd><p>Predict student outcome probabilities based on trained model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -276,14 +288,14 @@ HMM-scalable tool (<a class="reference external" href="http://yudelson.info/hmm-
 </dd></dl>
 
 <dl class="method">
-<dt id="bkt.BKT.score">
-<code class="sig-name descname">score</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bkt.html#BKT.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bkt.BKT.score" title="Permalink to this definition">¶</a></dt>
+<dt id="spkit.bkt.BKT.score">
+<code class="sig-name descname">score</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/bkt.html#BKT.score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.bkt.BKT.score" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates AIC, BIC, RMSE and accuracy for the predicted sample</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="bkt.BKT.set_params">
-<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bkt.html#BKT.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bkt.BKT.set_params" title="Permalink to this definition">¶</a></dt>
+<dt id="spkit.bkt.BKT.set_params">
+<code class="sig-name descname">set_params</code><span class="sig-paren">(</span><em class="sig-param">params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/bkt.html#BKT.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.bkt.BKT.set_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set model params. No validation is done for this function.
 Make sure the params variable is in the expected format.</p>
 <dl class="field-list simple">
@@ -299,12 +311,44 @@ Make sure the params variable is in the expected format.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-spkit.simulate_student">
+<span id="spkit-simulate-student-module"></span><h2>spkit.simulate_student module<a class="headerlink" href="#module-spkit.simulate_student" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spkit.simulate_student.SimulateStudent">
+<em class="property">class </em><code class="sig-prename descclassname">spkit.simulate_student.</code><code class="sig-name descname">SimulateStudent</code><span class="sig-paren">(</span><em class="sig-param">pi</em>, <em class="sig-param">A</em>, <em class="sig-param">B</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/simulate_student.html#SimulateStudent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.simulate_student.SimulateStudent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="spkit.simulate_student.SimulateStudent.random_MN_draw">
+<code class="sig-name descname">random_MN_draw</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">probs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/simulate_student.html#SimulateStudent.random_MN_draw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.simulate_student.SimulateStudent.random_MN_draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>get X random draws from the multinomial distribution whose probability is given by ‘probs’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spkit.simulate_student.SimulateStudent.simulate">
+<code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">nSteps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spkit/simulate_student.html#SimulateStudent.simulate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spkit.simulate_student.SimulateStudent.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>given an HMM = (A, B, pi), simulate state and observation sequences</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-spkit">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spkit" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
 
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="setup.html" class="btn btn-neutral float-left" title="setup module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

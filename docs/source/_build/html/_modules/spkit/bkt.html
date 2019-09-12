@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>bkt &mdash; Machine Teaching  documentation</title>
+  <title>spkit.bkt &mdash; Machine Teaching  documentation</title>
   
 
   
@@ -17,24 +17,24 @@
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
   
     
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
     
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
 
   
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -48,7 +48,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> Machine Teaching
+            <a href="../../index.html" class="icon icon-home"> Machine Teaching
           
 
           
@@ -61,7 +61,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -80,8 +80,8 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../setup.html">setup module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spkit.html">spkit package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">setup module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spkit.html">spkit package</a></li>
 </ul>
 
             
@@ -96,7 +96,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">Machine Teaching</a>
+          <a href="../../index.html">Machine Teaching</a>
         
       </nav>
 
@@ -125,11 +125,11 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="index.html">Module code</a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
         
-      <li>bkt</li>
+      <li>spkit.bkt</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -144,7 +144,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for bkt</h1><div class="highlight"><pre>
+  <h1>Source code for spkit.bkt</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">zipfile</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
@@ -170,7 +170,7 @@
 <span class="p">}</span>
 
 
-<div class="viewcode-block" id="BKT"><a class="viewcode-back" href="../bkt.html#bkt.BKT">[docs]</a><span class="k">class</span> <span class="nc">BKT</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="BKT"><a class="viewcode-back" href="../../spkit.html#spkit.bkt.BKT">[docs]</a><span class="k">class</span> <span class="nc">BKT</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">hmm_folder</span><span class="o">=</span><span class="s1">&#39;hmm-scalable-818d905234a8600a8e3a65bb0f7aa4cf06423f1a&#39;</span><span class="p">,</span>
                  <span class="n">git_commit</span><span class="o">=</span><span class="s1">&#39;818d905234a8600a8e3a65bb0f7aa4cf06423f1a&#39;</span><span class="p">):</span>
@@ -243,7 +243,7 @@
     <span class="k">def</span> <span class="nf">_get_correct_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">learning_state</span><span class="p">,</span> <span class="n">skills_idx</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[</span><span class="n">skills_idx</span><span class="p">])</span><span class="o">*</span><span class="n">learning_state</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">[</span><span class="n">skills_idx</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">learning_state</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BKT.download"><a class="viewcode-back" href="../bkt.html#bkt.BKT.download">[docs]</a>    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BKT.download"><a class="viewcode-back" href="../../spkit.html#spkit.bkt.BKT.download">[docs]</a>    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;  This implementation is a wrapper around the</span>
 <span class="sd">        HMM-scalable tool ( http://yudelson.info/hmm-scalable).</span>
 <span class="sd">        This function will download and install the original implementation.</span>
@@ -276,7 +276,7 @@
                                <span class="s2">&quot;Code: </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span>
                                <span class="s2">&quot;Error: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">stderr</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="BKT.fit"><a class="viewcode-back" href="../bkt.html#bkt.BKT.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_matrix</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;bw&#39;</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+<div class="viewcode-block" id="BKT.fit"><a class="viewcode-back" href="../../spkit.html#spkit.bkt.BKT.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_matrix</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;bw&#39;</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Fit BKT model to data.</span>
 <span class="sd">        As of July 2019, just default parameters are allowed.</span>
 
@@ -448,7 +448,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcome_prob</span>
 
-<div class="viewcode-block" id="BKT.predict_proba"><a class="viewcode-back" href="../bkt.html#bkt.BKT.predict_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_matrix</span><span class="p">,</span> <span class="n">learning_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="BKT.predict_proba"><a class="viewcode-back" href="../../spkit.html#spkit.bkt.BKT.predict_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_matrix</span><span class="p">,</span> <span class="n">learning_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Predict student outcome probabilities based on trained model.</span>
 
 <span class="sd">        Parameters</span>
@@ -481,7 +481,7 @@
         <span class="n">y_pred_proba</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">q_matrix</span><span class="p">,</span> <span class="n">learning_state</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">y_pred_proba</span></div>
 
-<div class="viewcode-block" id="BKT.predict"><a class="viewcode-back" href="../bkt.html#bkt.BKT.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_matrix</span><span class="p">,</span> <span class="n">model_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="BKT.predict"><a class="viewcode-back" href="../../spkit.html#spkit.bkt.BKT.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">q_matrix</span><span class="p">,</span> <span class="n">model_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Predict student outcomes based on trained model. This is just the</span>
 <span class="sd">        hard-assigment (highest probability) of the outcome probabilities.</span>
 
@@ -508,7 +508,7 @@
         <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_pred_proba</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">y_pred</span></div>
 
-<div class="viewcode-block" id="BKT.score"><a class="viewcode-back" href="../bkt.html#bkt.BKT.score">[docs]</a>    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BKT.score"><a class="viewcode-back" href="../../spkit.html#spkit.bkt.BKT.score">[docs]</a>    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculates AIC, BIC, RMSE and accuracy for the predicted sample</span>
 
@@ -530,7 +530,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">aic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rmse</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc</span></div>
 
-<div class="viewcode-block" id="BKT.get_params"><a class="viewcode-back" href="../bkt.html#bkt.BKT.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BKT.get_params"><a class="viewcode-back" href="../../spkit.html#spkit.bkt.BKT.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get fitted params.</span>
 
 <span class="sd">        Returns</span>
@@ -541,7 +541,7 @@
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;You should run fit before getting params&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span></div>
 
-<div class="viewcode-block" id="BKT.set_params"><a class="viewcode-back" href="../bkt.html#bkt.BKT.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="BKT.set_params"><a class="viewcode-back" href="../../spkit.html#spkit.bkt.BKT.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set model params. No validation is done for this function.</span>
 <span class="sd">        Make sure the params variable is in the expected format.</span>
 

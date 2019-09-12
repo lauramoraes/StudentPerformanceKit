@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>simulate_student &mdash; Machine Teaching  documentation</title>
+  <title>spkit.simulate_student &mdash; Machine Teaching  documentation</title>
   
 
   
@@ -17,24 +17,24 @@
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
   
     
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
     
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
 
   
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -48,7 +48,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> Machine Teaching
+            <a href="../../index.html" class="icon icon-home"> Machine Teaching
           
 
           
@@ -61,7 +61,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -80,8 +80,8 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../setup.html">setup module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spkit.html">spkit package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup.html">setup module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spkit.html">spkit package</a></li>
 </ul>
 
             
@@ -96,7 +96,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">Machine Teaching</a>
+          <a href="../../index.html">Machine Teaching</a>
         
       </nav>
 
@@ -125,11 +125,11 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="index.html">Module code</a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
         
-      <li>simulate_student</li>
+      <li>spkit.simulate_student</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -144,23 +144,23 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for simulate_student</h1><div class="highlight"><pre>
+  <h1>Source code for spkit.simulate_student</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
-<div class="viewcode-block" id="SimulateStudent"><a class="viewcode-back" href="../simulate_student.html#simulate_student.SimulateStudent">[docs]</a><span class="k">class</span> <span class="nc">SimulateStudent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SimulateStudent"><a class="viewcode-back" href="../../spkit.html#spkit.simulate_student.SimulateStudent">[docs]</a><span class="k">class</span> <span class="nc">SimulateStudent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">priors</span> <span class="o">=</span> <span class="n">pi</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">states_name</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Learned&quot;</span><span class="p">,</span> <span class="s2">&quot;Not learned&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="n">A</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">emission</span> <span class="o">=</span> <span class="n">B</span>
 
-<div class="viewcode-block" id="SimulateStudent.random_MN_draw"><a class="viewcode-back" href="../simulate_student.html#simulate_student.SimulateStudent.random_MN_draw">[docs]</a>    <span class="k">def</span> <span class="nf">random_MN_draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">probs</span><span class="p">):</span>
+<div class="viewcode-block" id="SimulateStudent.random_MN_draw"><a class="viewcode-back" href="../../spkit.html#spkit.simulate_student.SimulateStudent.random_MN_draw">[docs]</a>    <span class="k">def</span> <span class="nf">random_MN_draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">probs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; get X random draws from the multinomial distribution whose probability is given by &#39;probs&#39; &quot;&quot;&quot;</span>
         <span class="n">mn_draw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">probs</span><span class="p">)</span> <span class="c1"># do 1 multinomial experiment with the given probs with probs= [0.5,0.5], this is a coin-flip</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mn_draw</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># get the index of the state drawn e.g. 0, 1, etc.</span></div>
 
-<div class="viewcode-block" id="SimulateStudent.simulate"><a class="viewcode-back" href="../simulate_student.html#simulate_student.SimulateStudent.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nSteps</span><span class="p">):</span>
+<div class="viewcode-block" id="SimulateStudent.simulate"><a class="viewcode-back" href="../../spkit.html#spkit.simulate_student.SimulateStudent.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nSteps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; given an HMM = (A, B, pi), simulate state and observation sequences &quot;&quot;&quot;</span>
         <span class="n">observations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nSteps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span> <span class="c1"># array of zeros</span>
         <span class="n">states</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nSteps</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
