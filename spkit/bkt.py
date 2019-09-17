@@ -276,7 +276,11 @@ class BKT(object):
 
         for idx, outcome in enumerate(self.outcomes):
             # Get question skills from q_matrix
-            skills_idx = np.where(q_matrix[data[idx, 1], :] == 1)
+            question_id = data[idx, 1]
+
+            # Get skill index in skills list
+            skills_name = np.where(q_matrix[question_id, :] == 1)
+            skills_idx = np.where(np.isin(skills, skills_name))
 
             # Sliced learning states (skill is present in this question)
             l_sliced = learning_state[skills_idx]
@@ -296,7 +300,6 @@ class BKT(object):
                 ll_local = np.log(self.outcome_prob[idx, 0])
                 l_sliced = self._update(l_sliced, skills_idx, False)
             learning_state[skills_idx] = l_sliced
-
             self.loglikelihood[idx] += ll_local
 
         return self.outcome_prob
