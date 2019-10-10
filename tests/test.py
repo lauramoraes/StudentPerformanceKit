@@ -1,7 +1,7 @@
 import unittest
 import os
 import numpy as np
-from bkt import BKT
+from spkit import bkt
 import logging
 
 LOGGER = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class TestBKT(unittest.TestCase):
 
     def test_download(self):
         """ Testing HMM-scalable download """
-        model = BKT()
+        model = bkt.BKT()
         model.download()
 
         # Check if directory exists and it contains items
@@ -41,7 +41,7 @@ class TestBKT(unittest.TestCase):
         q_matrix[[0, 1], 1] = 1
 
         # Instantiate model
-        model = BKT()
+        model = bkt.BKT()
         model.fit(data, q_matrix)
 
         # Make sure self.params variable is complete after this test
@@ -60,7 +60,7 @@ class TestBKT(unittest.TestCase):
         q_matrix[[0, 1], 1] = 1
 
         # Instantiate model
-        model = BKT()
+        model = bkt.BKT()
         model.fit(data, q_matrix)
 
         params = model.get_params()
@@ -129,7 +129,7 @@ class TestBKT(unittest.TestCase):
         q_matrix[[0, 1], 1] = 1
 
         # Instantiate model
-        model = BKT()
+        model = bkt.BKT()
         model.fit(data, q_matrix)
 
         # Data for predicting should contain only one student
@@ -161,7 +161,7 @@ class TestBKT(unittest.TestCase):
         q_matrix[[0, 1], 1] = 1
 
         # Instantiate model
-        model = BKT()
+        model = bkt.BKT()
         model.fit(data, q_matrix)
 
         # Data for predicting should contain only one student
@@ -191,7 +191,7 @@ class TestBKT(unittest.TestCase):
         q_matrix[[0, 1], 1] = 1
 
         # Instantiate model
-        model = BKT()
+        model = bkt.BKT()
         model.fit(data, q_matrix)
 
         # Data for predicting should contain only one student
