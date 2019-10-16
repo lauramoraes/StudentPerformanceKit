@@ -102,12 +102,6 @@ class PFA(object):
         pfa_onehot = self._skills_onehot(df)
         return pfa_onehot
 
-    def _create_data(data):
-        idx = np.where(skills == row['skill'])[0][0]
-        wins = row['wins']*skills_onehot[idx]
-        fails = row['fails']*skills_onehot[idx]
-        return np.concatenate((skills_onehot[idx], wins, fails))
-
     def fit(self, data, q_matrix, **kwargs):
         """ Fit PFA model to data.
 
@@ -267,6 +261,30 @@ class PFA(object):
         y_pred_proba = self._predict(data, q_matrix)
         y_pred = np.argmax(y_pred_proba, axis=1)
         return y_pred
+
+    def score(self, y, y_pred_proba):
+        """
+        Calculates LL, AIC, BIC, RMSE and accuracy for the predicted sample
+
+        """
+        # LL
+        self.loglikelihood = (np.log(y_pred_proba[range(y.shape[0]),y]))
+
+        # AIC: 7 is the number of PFA parameters
+        self.aic = -2*self.loglikelihood.sum() + 2*7
+
+        # BIC: 7 is the number of PFA parameters
+        self.bic = -2*self.loglikelihood.sum() + 7*np.log(y.shape[0])
+
+        # RMSE
+        rmse = ((1-self.outcome_prob[range(y.shape[0]), y])**2).sum()
+        self.rmse = np.sqrt(rmse/y.shape[0])
+
+        # Accuracy
+        estimated_outcome = np.argmax(self.outcome_prob, axis=1)
+        self.acc = (estimated_outcome == y).sum()/y.shape[0]
+
+        return self.loglikelihood.sum(), self.aic, self.bic, self.rmse, self.acc
 
     def get_params(self):
         """ Get fitted params.
