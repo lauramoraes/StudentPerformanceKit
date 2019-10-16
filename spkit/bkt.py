@@ -34,10 +34,14 @@ class BKT(object):
         self.hmm_folder = hmm_folder
         # Params
         self.params = None
+        self.skills = None
 
         # Separate skill params from general model params
         self.model_params = ["SolverId", "nK", "nG", "nS", "nO", "nZ",
                              "Null skill ratios"]
+
+        # Student learning state
+        self.learning_state = None
 
         # Evaluation metrics
         self.n_skills = 0
@@ -59,7 +63,7 @@ class BKT(object):
         with open("%s.txt" % filename, "w") as step_file:
             for row in data:
                 outcome, student_id, question_id = row
-                # Transform correct to 1 and incorrect to 2 (requred by the tool)
+                # Transform correct to 1 and incorrect to 2 (required by the tool)
                 outcome = -outcome+2
                 skills = np.where(q_matrix[question_id] == 1)
                 skills = "~".join(str(skill) for skill in skills[0])
@@ -145,6 +149,10 @@ class BKT(object):
             Each row is a question and each column a concept.
             If the concept is present in the question, the
             correspondent cell should contain 1, otherwise, 0.
+
+        skills: list, length: n_concepts
+            Each element is the concept present in the respective column in
+            the Q-Matrix
 
         solver: string, optional
             Algorithm used to fit the BKT model. Available solvers are:
@@ -249,7 +257,7 @@ class BKT(object):
         skills = np.zeros(self.n_skills)
 
         # If learning state is not set, use prior probabilities
-        if not learning_state:
+        if learning_state is None:
             learning_state = np.zeros(self.n_skills)
 
         self.T = np.zeros(self.n_skills)
@@ -302,6 +310,9 @@ class BKT(object):
             learning_state[skills_idx] = l_sliced
             self.loglikelihood[idx] += ll_local
 
+        # Set student learning state
+        self.learning_state = learning_state
+
         return self.outcome_prob
 
     def predict_proba(self, data, q_matrix, learning_state=None):
@@ -337,7 +348,7 @@ class BKT(object):
         y_pred_proba = self._predict(data, q_matrix, learning_state)
         return y_pred_proba
 
-    def predict(self, data, q_matrix, model_file=None):
+    def predict(self, data, q_matrix, learning_state=None):
         """ Predict student outcomes based on trained model. This is just the
         hard-assigment (highest probability) of the outcome probabilities.
 
@@ -360,7 +371,7 @@ class BKT(object):
         This calculates the predicted steps in the same way it is done in the
         HMM-scalable tool (http://yudelson.info/hmm-scalable)
         """
-        y_pred_proba = self._predict(data, q_matrix, model_file)
+        y_pred_proba = self._predict(data, q_matrix, learning_state)
         y_pred = np.argmax(y_pred_proba, axis=1)
         return y_pred
 
@@ -384,7 +395,7 @@ class BKT(object):
         estimated_outcome = np.argmax(self.outcome_prob, axis=1)
         self.acc = (estimated_outcome == self.outcomes).sum()/self.n_questions
 
-        return self.aic, self.bic, self.rmse, self.acc
+        return self.loglikelihood.sum(), self.aic, self.bic, self.rmse, self.acc
 
     def get_params(self):
         """ Get fitted params.
@@ -407,3 +418,14 @@ class BKT(object):
         """
         self.params = params
         return self
+
+    def get_learning_state(self):
+        """ Return last predict student learning state.
+
+        Returns
+        -------
+        learning_state: array. Array with last predicted student learning state value for each KC.
+        """
+        if self.learning_state is None:
+            raise RuntimeError("You should predict outcomes for a student before getting the learning state")
+        return self.learning_state
