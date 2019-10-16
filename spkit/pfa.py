@@ -12,17 +12,28 @@ algorithm_lookup = {
 }
 
 default_params = {
-    "sklearn": {"fit_intercept": False},
+    "sklearn": {},
     "sm": {"family": sm.families.Binomial()}
 }
 
-sm_regularized_params = ["alpha", "start_params", "refit"]
+sm_regularized_params = ["alpha", "start_params", "refit", "L1_wt",
+                         "cnvrg_tol", "maxiter", "zero_tol"]
 
 
 class PFA(object):
-    def __init__(self):
+    def __init__(self, lib="sklearn"):
+        """ Init PFA object
+
+        Parameters
+        ----------
+        lib: sklearn uses Scikit-Learn LogisticRegression module. sm uses
+            StatsModel glm module.
+        """
+        # Lib to use
+        self.lib = lib
         # Model
         self.model = None
+        self.model_params = None
         # Params
         self.params = None
 
@@ -97,7 +108,7 @@ class PFA(object):
         fails = row['fails']*skills_onehot[idx]
         return np.concatenate((skills_onehot[idx], wins, fails))
 
-    def fit(self, data, q_matrix, lib='sklearn', **kwargs):
+    def fit(self, data, q_matrix, **kwargs):
         """ Fit PFA model to data.
 
 
@@ -114,9 +125,6 @@ class PFA(object):
             If the concept is present in the question, the
             correspondent cell should contain 1, otherwise, 0.
 
-        lib: sklearn uses Scikit-Learn LogisticRegression module. sm uses
-            StatsModel glm module. sm only supports elasticnet penalty.
-
         kwargs = extra parameters to be passed to sklearn or sm libraries. If
             penalty parameter is set to sm library, fit_regularized method is
             used.
@@ -125,24 +133,37 @@ class PFA(object):
         -------
         self: object
 
+        Notes
+        -----
+        To obtain close results using regularization in sklearn and sm
+        libraries, use the following equalities between parameters:
+        (sklearn) C = 1/(n * alpha) (sm)
+        (sklearn) l1_ratio = L1_wt (sm)
+
+        Results may still be different due to different solver algorithms.
+
         """
         # Transform data to PFA format
         data, cols = self._transform_data(data, q_matrix)
 
         # Fit model
         X = data[cols]
-        X = sm.add_constant(X, prepend=True)
         y = data['outcome']
 
         # Fit data
-        params = copy.deepcopy(default_params[lib])
+        params = copy.deepcopy(default_params[self.lib])
         params.update(kwargs)
+        self.model_params = params
 
-        if lib == "sklearn":
-            model = algorithm_lookup[lib](**params)
+        if self.lib == "sklearn":
+            model = algorithm_lookup[self.lib](**params)
             model.fit(X, y)
-        elif lib == "sm":
-            model = algorithm_lookup[lib](y, X, **params)
+            self.params = np.concatenate((model.intercept_.reshape(-1,1),
+                                          model.coef_), axis=1)
+        elif self.lib == "sm":
+            # If sm library, it is needed to add the intercept
+            X = sm.add_constant(X)
+            model = algorithm_lookup[self.lib](y, X, **params)
             if "penalty" in params:
                 reg_params = {}
                 for key in sm_regularized_params:
@@ -153,5 +174,118 @@ class PFA(object):
                 model = model.fit_regularized(**reg_params)
             else:
                 model = model.fit()
+            self.params = model.params.values.reshape(1,-1)
 
-        return model
+        self.model = model
+        return self
+
+    def _predict(self, data, q_matrix):
+        """ Predict student outcomes based on trained model.
+
+        Parameters
+        ----------
+        data : {array-like}, shape (n_steps, 2)
+            Sequence of student steps. Each of the three dimensions are:
+            Observed outcome: 0 for fail and 1 for success
+            Question id: question id in q_matrix
+
+        q_matrix: matrix, shape (n_questions, n_concepts)
+            Each row is a question and each column a concept.
+            If the concept is present in the question, the
+            correspondent cell should contain 1, otherwise, 0.
+
+        Returns
+        -------
+        outcome : {array-like}, shape (n_steps, 2)
+            Outcome probabilites for steps in data. Column 0 corresponds to
+            outcome 0 (incorrect) and column 1 to outcome 1 (correct)
+        """
+        # Transform data to PFA format
+        data, cols = self._transform_data(data, q_matrix)
+
+        # Fit model
+        X = data[cols]
+        y = data['outcome']
+        if self.lib == "sklearn":
+            self.outcome_prob = self.model.predict_proba(X)
+        elif self.lib == "sm":
+            # If sm library, it is needed to add the intercept
+            X = sm.add_constant(X)
+            self.outcome_prob = np.zeros((X.shape[0], 2))
+            self.outcome_prob[:,1] = self.model.predict(X).values
+            self.outcome_prob[:,0] = 1 - self.outcome_prob[:,1]
+
+        return self.outcome_prob
+
+    def predict_proba(self, data, q_matrix):
+        """ Predict student outcome probabilities based on trained model.
+
+        Parameters
+        ----------
+        data : {array-like}, shape (n_steps, 2)
+            Sequence of student steps. Each of the two dimensions are:
+            Observed outcome: 0 for fail and 1 for success
+            Question id: question id in q_matrix
+
+        q_matrix: matrix, shape (n_questions, n_concepts)
+            Each row is a question and each column a concept.
+            If the concept is present in the question, the
+            correspondent cell should contain 1, otherwise, 0.
+
+        Returns
+        -------
+        outcome : {array-like}, shape (n_steps, 2)
+            Outcome probabilites for steps in data. Column 0 corresponds to
+            outcome 0 (incorrect) and column 1 to outcome 1 (correct)
+
+        """
+        y_pred_proba = self._predict(data, q_matrix)
+        return y_pred_proba
+
+    def predict(self, data, q_matrix):
+        """ Predict student outcomes based on trained model. This is just the
+        hard-assigment (highest probability) of the outcome probabilities.
+
+        Parameters
+        ----------
+        data : {array-like}, shape (n_steps, 2)
+            Sequence of student steps. Each of the two dimensions are:
+            Observed outcome: 0 for fail and 1 for success
+            Question id: question id in q_matrix
+
+        q_matrix: matrix, shape (n_questions, n_concepts)
+            Each row is a question and each column a concept.
+            If the concept is present in the question, the
+            correspondent cell should contain 1, otherwise, 0.
+
+        Returns
+        -------
+        outcome : {array-like}, shape (n_steps, 2)
+            Outcome probabilites for steps in data. Column 0 corresponds to
+            outcome 0 (incorrect) and column 1 to outcome 1 (correct)
+        """
+        y_pred_proba = self._predict(data, q_matrix)
+        y_pred = np.argmax(y_pred_proba, axis=1)
+        return y_pred
+
+    def get_params(self):
+        """ Get fitted params.
+
+        Returns
+        -------
+        params : list. List containing the prior, transition and emission values for each skill.
+        """
+        if self.params is None:
+            raise RuntimeError("You should run fit before getting params")
+        return self.params
+
+    def set_params(self, params):
+        """ Set model params. No validation is done for this function.
+        Make sure the params variable is in the expected format.
+
+        Returns
+        -------
+        self: object
+        """
+        self.params = params
+        return self

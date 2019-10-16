@@ -321,7 +321,7 @@ class BKT(object):
         Parameters
         ----------
         data : {array-like}, shape (n_steps, 2)
-            Sequence of student steps. Each of the three dimensions are:
+            Sequence of student steps. Each of the two dimensions are:
             Observed outcome: 0 for fail and 1 for success
             Question id: question id in q_matrix
 
@@ -354,11 +354,19 @@ class BKT(object):
 
         Parameters
         ----------
-        data : {array-like}, shape (n_steps, 3)
-            Sequence of students steps. Each of the three dimensions are:
+        data : {array-like}, shape (n_steps, 2)
+            Sequence of student steps. Each of the two dimensions are:
             Observed outcome: 0 for fail and 1 for success
-            Student id: student unique identifier
             Question id: question id in q_matrix
+
+        q_matrix: matrix, shape (n_questions, n_concepts)
+            Each row is a question and each column a concept.
+            If the concept is present in the question, the
+            correspondent cell should contain 1, otherwise, 0.
+
+        learning_state: {array-like}, shape (n_skills,)
+            Set learning state for each skill. The skills should be in the same
+            order as in the model parameters.
 
         Returns
         -------
@@ -369,7 +377,7 @@ class BKT(object):
         Notes
         -----
         This calculates the predicted steps in the same way it is done in the
-        HMM-scalable tool (http://yudelson.info/hmm-scalable)
+        HMM-scalable tool (http://yudelson.info/hmm-scalable).
         """
         y_pred_proba = self._predict(data, q_matrix, learning_state)
         y_pred = np.argmax(y_pred_proba, axis=1)
@@ -377,7 +385,7 @@ class BKT(object):
 
     def score(self):
         """
-        Calculates AIC, BIC, RMSE and accuracy for the predicted sample
+        Calculates LL, AIC, BIC, RMSE and accuracy for the predicted sample
 
         """
         # AIC
