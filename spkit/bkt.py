@@ -8,6 +8,7 @@ import numpy as np
 import re
 import logging
 import logging.config
+import sys
 
 #logging.config.fileConfig(fname='file.conf', disable_existing_loggers=False)
 
@@ -180,9 +181,10 @@ class BKT(object):
 
         # Run train program for Windows
         if sys.platform == 'win32':
-            command = "trainhmm.exe -s %s -i %d -d ~ ../%s.txt ../%s_model.txt" % (
-                    self.hmm_folder, algorithm_lookup[solver], iterations,
-                    filename, filename)
+            path = os.path.abspath('.')
+            command = "%s/%s/trainhmm.exe -s %s -i %d -d ~ ../%s.txt ../%s_model.txt" % (
+                    path, self.hmm_folder, algorithm_lookup[solver],
+                    iterations, filename, filename)
             process = subprocess.Popen(command, cwd=self.hmm_folder)
 
         # Or Linux

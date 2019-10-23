@@ -3,6 +3,7 @@ import os
 import numpy as np
 from spkit import bkt
 import logging
+import sys
 
 LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +22,10 @@ class TestBKT(unittest.TestCase):
 
     def test_download(self):
         """ Testing HMM-scalable download """
-        model = bkt.BKT()
+        if sys.platform == "win32":
+            model = bkt.BKT(tmp_folder='.')
+        else:
+            model = bkt.BKT()
         model.download()
 
         # Check if directory exists and it contains items
@@ -208,10 +212,11 @@ class TestBKT(unittest.TestCase):
         # Assert scores types
         for value in scores:
             self.assertTrue(isinstance(value, float))
+        print(scores)
 
         # Assert scores values for current example
-        expected_scores = (36.685475118198525, 44.651333306630455,
-                           0.3009647032927156, 0.9)
+        expected_scores = (-10.342737556693283, 36.685475118198525,
+                           44.651333306630455, 0.3009647032927156, 0.9)
         for idx in range(len(scores)):
             self.assertAlmostEqual(scores[idx], expected_scores[idx])
 
