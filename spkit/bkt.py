@@ -26,10 +26,13 @@ algorithm_lookup = {
 class BKT(object):
     def __init__(self,
                  hmm_folder='hmm-scalable-818d905234a8600a8e3a65bb0f7aa4cf06423f1a',
-                 git_commit='818d905234a8600a8e3a65bb0f7aa4cf06423f1a'):
+                 git_commit='818d905234a8600a8e3a65bb0f7aa4cf06423f1a',
+                 tmp_folder='/tmp'):
 
         # Git commit to download hmm-scalable
         self.git_commit = git_commit
+        # Set tmp folder to download hmm-scalable
+        self.tmp_folder = tmp_folder
         # Set HMM-scalable folder.
         self.hmm_folder = hmm_folder
         # Params
@@ -115,13 +118,12 @@ class BKT(object):
         (http://yudelson.info/hmm-scalable).  """
 
         # Download zipfile from GitHub
-#         results = requests.get('https://github.com/myudelson/hmm-scalable/archive/master.zip')
         results = requests.get('https://github.com/myudelson/hmm-scalable/archive/%s.zip' % self.git_commit)
-        with open('/tmp/hmm-scalable.zip', 'wb') as f:
+        with open('%s/hmm-scalable.zip' % self.tmp_folder, 'wb') as f:
             f.write(results.content)
 
         # Extract zipfile
-        file = zipfile.ZipFile('/tmp/hmm-scalable.zip')
+        file = zipfile.ZipFile('%s/hmm-scalable.zip' % self.tmp_folder)
         file.extractall(path='.')
 
         # Install
@@ -176,13 +178,22 @@ class BKT(object):
         # Create data file
         filename = self._create_data_file(data, q_matrix)
 
-        # Run train program
-        command = "./trainhmm -s %s -i %d -d ~ ../%s.txt ../%s_model.txt" % (
-            algorithm_lookup[solver], iterations, filename, filename)
-        args = shlex.split(command)
-        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.hmm_folder)
+        # Run train program for Windows
+        if sys.platform == 'win32':
+            command = "trainhmm.exe -s %s -i %d -d ~ ../%s.txt ../%s_model.txt" % (
+                    self.hmm_folder, algorithm_lookup[solver], iterations,
+                    filename, filename)
+            process = subprocess.Popen(command, cwd=self.hmm_folder)
+
+        # Or Linux
+        else:
+            command = "./trainhmm -s %s -i %d -d ~ ../%s.txt ../%s_model.txt" % (
+                algorithm_lookup[solver], iterations, filename, filename)
+            args = shlex.split(command)
+            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.hmm_folder)
+
         process.wait()
-        stdout, stderr = process.communicate()
+        #stdout, stderr = process.communicate()
         if process.returncode != 0:
             raise RuntimeError("Could not train HMM model. Check if the HMM files are properly created and "
                                "accessible.\n"
