@@ -186,6 +186,7 @@ class BKT(object):
                     path, self.hmm_folder, algorithm_lookup[solver],
                     iterations, filename, filename)
             process = subprocess.Popen(command, cwd=self.hmm_folder)
+            process.wait()
 
         # Or Linux
         else:
@@ -193,9 +194,9 @@ class BKT(object):
                 algorithm_lookup[solver], iterations, filename, filename)
             args = shlex.split(command)
             process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=self.hmm_folder)
+            process.wait()
+            stdout, stderr = process.communicate()
 
-        process.wait()
-        #stdout, stderr = process.communicate()
         if process.returncode != 0:
             raise RuntimeError("Could not train HMM model. Check if the HMM files are properly created and "
                                "accessible.\n"

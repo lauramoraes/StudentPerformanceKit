@@ -212,7 +212,6 @@ class TestBKT(unittest.TestCase):
         # Assert scores types
         for value in scores:
             self.assertTrue(isinstance(value, float))
-        print(scores)
 
         # Assert scores values for current example
         expected_scores = (-10.342737556693283, 36.685475118198525,
