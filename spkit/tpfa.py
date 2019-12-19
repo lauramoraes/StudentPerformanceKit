@@ -1,16 +1,19 @@
 from collections import defaultdict
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 import statsmodels.api as sm
 import copy
 from spkit.pfa import (PFA, default_params, algorithm_lookup,
                        sm_regularized_params)
-from datetime import timedelta
+from datetime import datetime, timedelta
+from statistics import median
 
+# Step function to categorize time.
+TIME_STEPS = [timedelta(minutes=15), timedelta(days=1)]
 
-TIME_STEPS = [timedelta(minutes=15), timedelta(day=1)]
-
+# To use as first date when calculating elapsed time
+REFERENCE_FIRST_DATE = datetime.fromtimestamp(0)
 
 class TPFA(PFA):
     def __init__(self, lib="sklearn"):
@@ -33,13 +36,26 @@ class TPFA(PFA):
             new_row = np.concatenate((new_row, onehot_col))
         return new_row
 
+    @staticmethod
+    def _categorize_timestamp(time_steps, reference_time, current_time):
+        """ Categorize current time into one of the provided time steps using
+        reference time as reference for the elapsed time."""
+        mean_time = datetime.fromtimestamp(median([
+            (item - REFERENCE_FIRST_DATE).total_seconds() for item in reference_time]))
+        time_delta = current_time - mean_time
+
+        # Test for each time step if elapsed time is lower or equal to its value
+        for idx, ts in enumerate(time_steps):
+            if time_delta <= ts:
+                return idx
+        return idx+1
+
     def _apply_onehot(self, data, cols=["wins", "fails"]):
         """ Transform data to its onehot format """
         skills = self.skills
         skills_onehot = self.params["skills_onehot"]
         onehot_array = data.apply(self._create_onehot, axis=1,
-                                  args=(skills,
-                                        skills_onehot))
+                                  args=(skills, skills_onehot, cols))
         onehot_cols = ["skills_%d" % skill for skill in skills]
         for col in cols:
             onehot_cols += ["%s_%d" % (col, skill) for skill in skills]
@@ -68,7 +84,7 @@ class TPFA(PFA):
         student_skills_count = {}
         pfa_data = []
         for idx, row in enumerate(data):
-            outcome, question_id = row
+            outcome, question_id, timestamp = row
 
             # Get skill index in skills list
             skills_idx = np.where(q_matrix[question_id, :] == 1)
@@ -77,11 +93,24 @@ class TPFA(PFA):
                 # Create skills for student if it's new
                 if skill not in student_skills_count:
                     student_skills_count[skill] = defaultdict(int)
+                    # Save every timestamp when the student practiced the skill
+                    student_skills_count[skill]["timestamp"] = []
+
+                # Categorize timestamp into respective time step
+                student_skills_count[skill]["timestamp"].append(timestamp)
+                reference_time = student_skills_count[skill][
+                    "timestamp"][-1-self.past_questions:-1]
+                # If first row, use as reference the date given in
+                # REFERENCE_FIRST_DATE
+                if not reference_time:
+                    reference_time = [REFERENCE_FIRST_DATE]
+                ts_category = self._categorize_timestamp(
+                    TIME_STEPS, reference_time, timestamp)
 
                 # Add row to PFA table
                 wins = student_skills_count[skill]["wins"]
                 fails = student_skills_count[skill]["fails"]
-                pfa_row = (idx, skill, wins, fails, outcome)
+                pfa_row = (idx, skill, wins, fails, ts_category, outcome)
                 pfa_data.append(pfa_row)
 
                 # Update wins or fails counter
@@ -92,8 +121,8 @@ class TPFA(PFA):
 
         # Create dataframe from PFA data
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins",
-                                             "fails", "outcome"])
-        pfa_onehot = self._apply_onehot(df)
+                                             "fails", "time", "outcome"])
+        pfa_onehot = self._apply_onehot(df, cols=["wins", "fails", "time"])
         # Sum learning state (previous wins and fails)
         if learning_state:
             for idx, skill in enumerate(self.skills):
@@ -103,12 +132,14 @@ class TPFA(PFA):
 
     def _transform_data(self, data, q_matrix, past_questions=1,
                         time_steps=TIME_STEPS):
-        """ Transform original data into PFA expected format. Calculates wins,
-        fails, get skills and transform everything into one-hot variables """
+        """ Transform original data into TPFA expected format. Calculates wins,
+        fails, elapsed time, get skills and transform everything into one-hot
+        variables """
+        self.past_questions = past_questions
         skills_count = {}
         pfa_data = []
         for idx, row in enumerate(data):
-            outcome, student_id, question_id = row
+            outcome, student_id, question_id, timestamp = row
             # If student was not seen yet, create student counter
             if student_id not in skills_count:
                 skills_count[student_id] = {}
@@ -120,11 +151,23 @@ class TPFA(PFA):
                 # Create skills for student if it's new
                 if skill not in skills_count[student_id]:
                     skills_count[student_id][skill] = defaultdict(int)
+                    # Save every timestamp when the student practiced the skill
+                    skills_count[student_id][skill]["timestamp"] = []
+
+                # Categorize timestamp into respective time step
+                skills_count[student_id][skill]["timestamp"].append(timestamp)
+                reference_time = skills_count[student_id][skill][
+                    "timestamp"][-1-past_questions:-1]
+                # If first row, use as reference the date given in REFERENCE_FIRST_DATE
+                if not reference_time:
+                    reference_time = [REFERENCE_FIRST_DATE]
+                ts_category = self._categorize_timestamp(
+                    TIME_STEPS, reference_time, timestamp)
 
                 # Add row to PFA table
                 wins = skills_count[student_id][skill]["wins"]
                 fails = skills_count[student_id][skill]["fails"]
-                pfa_row = (idx, skill, wins, fails, outcome)
+                pfa_row = (idx, skill, wins, fails, ts_category, outcome)
                 pfa_data.append(pfa_row)
 
                 # Update wins or fails counter
@@ -135,12 +178,12 @@ class TPFA(PFA):
 
         # Create dataframe from PFA data
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins", "fails",
-                                             "outcome"])
+                                             "time", "outcome"])
         skills, skills_onehot = self._onehot_encoder(df, "skill")
         self.skills = skills
         self.n_skills = len(skills)
         self.params["skills_onehot"] = skills_onehot
-        pfa_onehot = self._apply_onehot(df)
+        pfa_onehot = self._apply_onehot(df, cols=["wins", "fails", "time"])
         return pfa_onehot
 
     def fit(self, data, q_matrix, **kwargs):
@@ -183,7 +226,9 @@ class TPFA(PFA):
         data, cols = self._transform_data(data, q_matrix)
 
         # Fit model
-        X = data[cols]
+        scaler = StandardScaler()
+        X = scaler.fit_transform(data[cols])
+        self.scaler = scaler
         y = data['outcome']
 
         # Fit data
@@ -242,7 +287,8 @@ class TPFA(PFA):
                                                   learning_state)
 
         # Fit model
-        X = data[cols]
+        X_not_norm = data[cols]
+        X = self.scaler.transform(data[cols])
         self.outcomes = data['outcome']
         self.n_questions = self.outcomes.shape[0]
 
@@ -257,10 +303,10 @@ class TPFA(PFA):
 
         # Update student learning state
         for skill in self.skills:
-            worked_skill = X[X['skills_%s' % skill] == 1]
+            worked_skill = X_not_norm[X_not_norm['skills_%s' % skill] == 1]
             if not worked_skill.empty:
-                wins = X[X['skills_%s' % skill] == 1]['wins_%s' % skill].tail(1).iloc[0]
-                fails = X[X['skills_%s' % skill] == 1]['fails_%s' % skill].tail(1).iloc[0]
+                wins = X_not_norm[X_not_norm['skills_%s' % skill] == 1]['wins_%s' % skill].tail(1).iloc[0]
+                fails = X_not_norm[X_not_norm['skills_%s' % skill] == 1]['fails_%s' % skill].tail(1).iloc[0]
             else:
                 wins = 0
                 fails = 0
