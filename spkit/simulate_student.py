@@ -1,12 +1,14 @@
 import numpy as np
+from datetime import datetime
 
 
 class SimulateStudent(object):
-    def __init__(self, pi, A, B):
+    def __init__(self, pi, A, B, timestamp_prior=None):
         self.priors = pi
         self.states_name = ["Learned", "Not learned"]
         self.transition = A
         self.emission = B
+        self.timestamp_prior = timestamp_prior
 
     def random_MN_draw(self, n, probs):
         """ get X random draws from the multinomial distribution whose probability is given by 'probs' """
@@ -25,3 +27,10 @@ class SimulateStudent(object):
             observations[t] = self.random_MN_draw(1, self.emission[states[t]]) # given current state t, pick what row of the B matrix to use
 
         return observations, states
+
+    def simulate_timestamp(self, state, time_steps, last_time=datetime(2019,12,17)):
+        ts_prior = self.timestamp_prior[state]
+        idx =  self.random_MN_draw(1, ts_prior)
+        random_timedelta = time_steps[idx]
+        random_ts = last_time + np.random.random() * random_timedelta
+        return random_ts

@@ -5,7 +5,7 @@ import setuptools
 
 setuptools.setup(
     name="spkit",
-    version="0.0.1",
+    version="0.0.2",
     author="Laura Moraes",
     author_email="lmoraes@cos.ufrj.br",
     description="Package to build different models for predicting student performance",
