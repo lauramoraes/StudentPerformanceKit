@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 import statsmodels.api as sm
 import copy
 from multiprocessing import Pool, cpu_count
-from psutil import virtual_memory
+#from psutil import virtual_memory
 from math import ceil
 
 algorithm_lookup = {
