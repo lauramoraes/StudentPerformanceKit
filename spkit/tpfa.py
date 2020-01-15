@@ -179,11 +179,45 @@ class TPFA(PFA):
         # Create dataframe from PFA data
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins", "fails",
                                              "time", "outcome"])
+        # Create onehot representation for skills
         skills, skills_onehot = self._onehot_encoder(df, "skill")
         self.skills = skills
         self.n_skills = len(skills)
         self.params["skills_onehot"] = skills_onehot
-        pfa_onehot = self._apply_onehot(df, cols=["wins", "fails", "time"])
+
+        # Create onehot representation for wins, fails and time
+        onehot_cols = ["skills_%d" % skill for skill in skills]
+        self.cols=["wins", "fails", "time"]
+        onehot_cols += self._create_onehot_cols(self, cols)
+        self.onehot_cols = onehot_cols
+        
+        df_split = np.array_split(df, 800)
+        
+        # Parallelize onehot transformation
+        if n_jobs:
+            if n_jobs == -1:
+                n_jobs = cpu_count()
+            with Pool(n_jobs) as pool:
+                pfa_onehot = pd.concat(pool.map(self._apply_onehot, df_split))
+        else:
+            # Group in one row questions with multiple skills
+            pfa_onehot = self._apply_onehot(df)
+
+        n_jobs_sum = kwargs.get("n_jobs_sum", None)
+        if n_jobs_sum:
+            if n_jobs_sum == -1:
+                n_jobs_sum = cpu_count()
+            with Pool(n_jobs_sum) as pool:
+                # Group in one row questions with multiple skills
+                pfa_onehot = pfa_onehot.groupby(['index'])
+                pfa_onehot = pd.concat(pool.map(self._sum_df, pfa_onehot), axis=1).T
+                pfa_onehot = pfa_onehot.drop(columns=['index'])
+        else:
+            pfa_onehot = pfa_onehot.groupby(['index']).sum()
+
+        # Change column types to save space and to count just once for outcome result
+        pfa_onehot = pfa_onehot.astype(np.uint16).astype({
+            'outcome': 'bool'}).astype({'outcome': 'uint8'})        
         return pfa_onehot
 
     def fit(self, data, q_matrix, **kwargs):
@@ -223,9 +257,10 @@ class TPFA(PFA):
         """
         # Transform data to PFA format
         self.params = {}
-        data, cols = self._transform_data(data, q_matrix)
+        data = self._transform_data(data, q_matrix)
 
         # Fit model
+        cols = self.onehot_cols
         scaler = StandardScaler()
         X = scaler.fit_transform(data[cols])
         self.scaler = scaler

@@ -6,6 +6,8 @@ from sklearn.linear_model import LogisticRegression
 import statsmodels.api as sm
 import copy
 from multiprocessing import Pool, cpu_count
+from psutil import virtual_memory
+from math import ceil
 
 algorithm_lookup = {
     "sklearn": LogisticRegression,
@@ -20,6 +22,10 @@ default_params = {
 sm_regularized_params = ["alpha", "start_params", "refit", "L1_wt",
                          "cnvrg_tol", "maxiter", "zero_tol"]
 
+# Found this number by testing with different options. This number of cells per DF (rows x columns)
+# when processing in parallel is the one that provided me the fastest processing.
+# Feel free to play around with it.
+MAX_CELLS = 825000
 
 class PFA(object):
     def __init__(self, lib="sklearn"):
@@ -54,12 +60,14 @@ class PFA(object):
         self.acc = 0
 
     @staticmethod
-    def _create_onehot(row, skills, skills_onehot):
+    def _create_onehot(row, skills, skills_onehot, cols=["wins", "fails"]):
         """ Transform each row to its one hot version """
         idx = np.where(skills == row['skill'])[0]
-        wins = row['wins']*skills_onehot[idx][0]
-        fails = row['fails']*skills_onehot[idx][0]
-        return np.concatenate((skills_onehot[idx][0], wins, fails))
+        new_row = skills_onehot[idx][0]
+        for col in cols:
+            onehot_col = row[col]*skills_onehot[idx][0]
+            new_row = np.concatenate((new_row, onehot_col))
+        return new_row
     
     @staticmethod
     def _change_type(data, col):
@@ -88,37 +96,58 @@ class PFA(object):
     @staticmethod
     def _sum_df(data):
         return data[1].sum()
+    
+    def _get_number_of_splits(self, df, cpus):
+        #available_mem = virtual_memory().available
+        #one_row_mem = df.iloc[0].memory_usage()*len(self.onehot_cols)
+        #rows_per_split = available_mem * 0.8 / (cpus * one_row_mem)
+        #splits = ceil(df.shape[0]/rows_per_split)
         
-    # def _apply_onehot(self, data):
-        # """ Transform data to its onehot format """
-        # skills = self.skills
-        # skills_onehot = self.params["skills_onehot"]
-        # onehot_array = data.apply(self._create_onehot, axis=1,
-                                  # args=(skills, 
-                                        # skills_onehot))
-        # cols = ["skills_%d"%skill for skill in skills]
-        # cols += ["wins_%d"%skill for skill in skills]
-        # cols += ["fails_%d"%skill for skill in skills]
-        # onehot_df = pd.DataFrame(onehot_array.tolist(), columns=cols)
-        # data = pd.concat((data, onehot_df), axis=1)
-        # data = data.drop(columns=['skill', 'wins', 'fails'])
-        # data = data.groupby(['index']).sum().astype({
-            # 'outcome': 'bool'}).astype({'outcome': 'int64'})
-        # return data, cols
+        #if splits < cpus:
+        #    return min(cpus, df.shape[0])
+        #else:
+        #    return splits
+        rows_per_split = MAX_CELLS/len(self.onehot_cols)
+        splits = ceil(df.shape[0]/rows_per_split)
+    
+    def _create_onehot_cols(self, cols=["wins", "fails"]):
+        onehot_cols = []
+        for col in cols:
+            onehot_cols += ["%s_%d" % (col, skill) for skill in self.skills]
+        return onehot_cols
         
-    def _apply_onehot(self, data, cols):
+    def _apply_onehot(self, data):
         """ Transform data to its onehot format """
+        #print("Applying to %d rows" % data.shape[0])
         skills = self.skills
         skills_onehot = self.params["skills_onehot"]
         onehot_array = data.apply(self._create_onehot, axis=1,
-                                  args=(skills, 
-                                        skills_onehot))
+                                  args=(skills, skills_onehot, self.cols))
+        # print("Onehot created")
         data = data.drop(columns=['skill', 'wins', 'fails'])
+        # print("Cols dropped")
         data = data.reset_index(drop=True)
-        onehot_df = pd.DataFrame(onehot_array.tolist(), columns=cols, dtype=np.uint16)
+        # print("Index reseted")
+        onehot_df = pd.DataFrame(onehot_array.tolist(), columns=self.onehot_cols, 
+                                 dtype=np.uint16)
+        # print("Extended df")
         data = pd.concat((data, onehot_df), axis=1)
+        # print("Concat df")
         data = self._change_type(data, 'index')
+        # print("DONE")
         return data
+        
+    def _onehot_encoder(self, data, col):
+        """ Transform PFA data to its onehot version where each columns
+        represents a skill, wins and fails for the corresponding skills. A
+        table header for 2 skills would contain the following information
+        skill_1 | skill_2 | wins_1 | wins_2 | fails_1 | fails_2
+        """
+        values = data[col].unique()
+        values_array = values.reshape(-1, 1)
+        enc = OneHotEncoder(categories='auto', sparse=False)
+        values_onehot = enc.fit_transform(values_array)
+        return values, values_onehot
 
     def _skills_onehot(self, data):
         """ Transform PFA data to its onehot version where each columns
@@ -166,18 +195,18 @@ class PFA(object):
         # Create dataframe from PFA data
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins",
                                              "fails", "outcome"])
-        pfa_onehot = self._apply_onehot(df, self.cols)
+        pfa_onehot = self._apply_onehot(df)
         # Sum learning state (previous wins and fails)
         if learning_state:
             for idx, skill in enumerate(self.skills):
                 pfa_onehot["wins_%s" % skill] += learning_state[idx][0]
                 pfa_onehot["fails_%s" % skill] += learning_state[idx][1]
                 
-        pfa_onehot = pfa_onehot.groupby(['index']).sum().astype({
-            'outcome': 'bool'}).astype({'outcome': 'uint8'})
-        return pfa_onehot, self.cols
+        pfa_onehot = pfa_onehot.groupby(['index']).sum().astype(np.uint16
+            ).astype({'outcome': 'bool'}).astype({'outcome': 'uint8'})
+        return pfa_onehot
 
-    def _transform_data(self, data, q_matrix, n_jobs, **kwargs):
+    def _transform_data(self, data, q_matrix, **kwargs):
         """ Transform original data into PFA expected format. Calculates wins,
         fails, get skills and transform everything into one-hot variables """
         skills_count = {}
@@ -211,43 +240,61 @@ class PFA(object):
         # Create dataframe from PFA data
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins", "fails",
                                              "outcome"])
-        # Transform to onehot format
-        self._skills_onehot(df)
-        cols = ["skills_%d"%skill for skill in self.skills]
-        cols += ["wins_%d"%skill for skill in self.skills]
-        cols += ["fails_%d"%skill for skill in self.skills]
-        df_split = np.array_split(df, 800)
-        self.cols = cols
-        args = list(zip(*[df_split, [cols]*len(df_split)]))
+                                             
+        # Create onehot representation for skills
+        skills, skills_onehot = self._onehot_encoder(df, "skill")
+        self.skills = skills
+        self.n_skills = len(skills)
+        self.params["skills_onehot"] = skills_onehot
+
+        # Create onehot representation for wins, fails and time
+        onehot_cols = ["skills_%d" % skill for skill in skills]
+        self.cols=["wins", "fails"]
+        onehot_cols += self._create_onehot_cols(self.cols)
+        self.onehot_cols = onehot_cols
         
         # Parallelize onehot transformation
+        n_jobs = kwargs.get("n_jobs", None)
         if n_jobs:
             if n_jobs == -1:
                 n_jobs = cpu_count()
+            splits = self._get_number_of_splits(df, n_jobs)
+            #splits = kwargs.get("splits", 800)
+            print("Using %d splits and %d jobs" % (splits, n_jobs))
+            # df_split = np.array_split(df, splits)
+            #print("Optimizing splits")
+            df_split = np.array_split(df, splits)
             with Pool(n_jobs) as pool:
-                pfa_onehot = pd.concat(pool.starmap(self._apply_onehot, args))
+                # a = pool.map(self._apply_onehot, df_split)
+                # return a
+                pfa_onehot = pd.concat(pool.map(self._apply_onehot, df_split))
         else:
-            # Group in one row questions with multiple skills
-            pfa_onehot = self._apply_onehot(df, self.cols)
+            pfa_onehot = self._apply_onehot(df)
+        print("BACK")
+        return pfa_onehot
 
-        n_jobs_sum = kwargs.get("n_jobs_sum", None)
-        if n_jobs_sum:
-            if n_jobs_sum == -1:
-                n_jobs_sum = cpu_count()
-            with Pool(n_jobs_sum) as pool:
-                # Group in one row questions with multiple skills
-                pfa_onehot = pfa_onehot.groupby(['index'])
-                pfa_onehot = pd.concat(pool.map(self._sum_df, pfa_onehot), axis=1).T
-                pfa_onehot = pfa_onehot.drop(columns=['index'])
-        else:
-            pfa_onehot = pfa_onehot.groupby(['index']).sum()
-
+        # n_jobs_sum = kwargs.get("n_jobs_sum", None)
+        # if n_jobs_sum:
+            # if n_jobs_sum == -1:
+                # n_jobs_sum = cpu_count()
+            # with Pool(n_jobs_sum) as pool:
+                # # Group in one row questions with multiple skills
+                # pfa_onehot = pfa_onehot.groupby(['index'])
+                # pfa_onehot = pd.concat(pool.map(self._sum_df, pfa_onehot), axis=1).T
+                # pfa_onehot = pfa_onehot.drop(columns=['index'])
+        # else:
+            # # Group in one row questions with multiple skills
+            # pfa_onehot = pfa_onehot.groupby(['index']).sum()
+            
+        pfa_onehot = pfa_onehot.groupby(['index']).sum()
+        
         # Change column types to save space and to count just once for outcome result
+        pfa_onehot = pfa_onehot.drop(columns=['skill'] + self.cols)
         pfa_onehot = pfa_onehot.astype(np.uint16).astype({
-            'outcome': 'bool'}).astype({'outcome': 'uint8'})
-        return pfa_onehot, cols
-
-    def fit(self, data, q_matrix, n_jobs=-1, **kwargs):
+            'outcome': 'bool'}).astype({'outcome': 'uint8'})        
+        return pfa_onehot
+        
+    def fit(self, data, q_matrix, **kwargs):
         """ Fit PFA model to data.
 
 
@@ -284,9 +331,10 @@ class PFA(object):
         """
         # Transform data to PFA format
         self.params = {}
-        data, cols = self._transform_data(data, q_matrix, n_jobs)
+        data = self._transform_data(data, q_matrix, **kwargs)
 
         # Fit model
+        cols = self.onehot_cols
         X = data[cols]
         y = data['outcome']
 
@@ -342,9 +390,10 @@ class PFA(object):
             outcome 0 (incorrect) and column 1 to outcome 1 (correct)
         """
         # Transform data to PFA format
-        data, cols = self._transform_student_data(data, q_matrix, learning_state)
+        data = self._transform_student_data(data, q_matrix, learning_state)
 
         # Fit model
+        cols = self.onehot_cols
         X = data[cols]
         self.outcomes = data['outcome']
         self.n_questions = self.outcomes.shape[0]
