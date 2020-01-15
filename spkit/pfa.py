@@ -109,6 +109,7 @@ class PFA(object):
         #    return splits
         rows_per_split = MAX_CELLS/len(self.onehot_cols)
         splits = ceil(df.shape[0]/rows_per_split)
+        return splits
     
     def _create_onehot_cols(self, cols=["wins", "fails"]):
         onehot_cols = []
