@@ -125,7 +125,7 @@ class PFA(object):
         onehot_array = data.apply(self._create_onehot, axis=1,
                                   args=(skills, skills_onehot, self.cols))
         # print("Onehot created")
-        data = data.drop(columns=['skill', 'wins', 'fails'])
+        data = data.drop(columns=['skill'] + self.cols)
         # print("Cols dropped")
         data = data.reset_index(drop=True)
         # print("Index reseted")
@@ -197,6 +197,7 @@ class PFA(object):
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins",
                                              "fails", "outcome"])
         pfa_onehot = self._apply_onehot(df)
+        
         # Sum learning state (previous wins and fails)
         if learning_state:
             for idx, skill in enumerate(self.skills):
@@ -290,7 +291,7 @@ class PFA(object):
         pfa_onehot = pfa_onehot.groupby(['index']).sum()
         
         # Change column types to save space and to count just once for outcome result
-        pfa_onehot = pfa_onehot.drop(columns=['skill'] + self.cols)
+        #pfa_onehot = pfa_onehot.drop(columns=['skill'] + self.cols)
         pfa_onehot = pfa_onehot.astype(np.uint16).astype({
             'outcome': 'bool'}).astype({'outcome': 'uint8'})        
         return pfa_onehot

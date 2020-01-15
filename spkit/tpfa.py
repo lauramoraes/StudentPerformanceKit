@@ -25,17 +25,7 @@ class TPFA(PFA):
             StatsModel glm module.
         """
         super().__init__(lib)
-
-    @staticmethod
-    def _create_onehot(row, skills, skills_onehot, cols=["wins", "fails"]):
-        """ Transform each row to its one hot version """
-        idx = np.where(skills == row['skill'])[0]
-        new_row = skills_onehot[idx][0]
-        for col in cols:
-            onehot_col = row[col]*skills_onehot[idx][0]
-            new_row = np.concatenate((new_row, onehot_col))
-        return new_row
-
+        
     @staticmethod
     def _categorize_timestamp(time_steps, reference_time, current_time):
         """ Categorize current time into one of the provided time steps using
@@ -49,34 +39,6 @@ class TPFA(PFA):
             if time_delta <= ts:
                 return idx
         return idx+1
-
-    def _apply_onehot(self, data, cols=["wins", "fails"]):
-        """ Transform data to its onehot format """
-        skills = self.skills
-        skills_onehot = self.params["skills_onehot"]
-        onehot_array = data.apply(self._create_onehot, axis=1,
-                                  args=(skills, skills_onehot, cols))
-        onehot_cols = ["skills_%d" % skill for skill in skills]
-        for col in cols:
-            onehot_cols += ["%s_%d" % (col, skill) for skill in skills]
-        onehot_df = pd.DataFrame(onehot_array.tolist(), columns=onehot_cols)
-        data = pd.concat((data, onehot_df), axis=1)
-        data = data.drop(columns=['skill'] + cols)
-        data = data.groupby(['index']).sum().astype({
-            'outcome': 'bool'}).astype({'outcome': 'int64'})
-        return data, onehot_cols
-
-    def _onehot_encoder(self, data, col):
-        """ Transform PFA data to its onehot version where each columns
-        represents a skill, wins and fails for the corresponding skills. A
-        table header for 2 skills would contain the following information
-        skill_1 | skill_2 | wins_1 | wins_2 | fails_1 | fails_2
-        """
-        values = data[col].unique()
-        values_array = values.reshape(-1, 1)
-        enc = OneHotEncoder(categories='auto', sparse=False)
-        values_onehot = enc.fit_transform(values_array)
-        return values, values_onehot
 
     def _transform_student_data(self, data, q_matrix, learning_state=None):
         """ Transform original data into PFA expected format. Calculates wins,
@@ -122,12 +84,16 @@ class TPFA(PFA):
         # Create dataframe from PFA data
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins",
                                              "fails", "time", "outcome"])
-        pfa_onehot = self._apply_onehot(df, cols=["wins", "fails", "time"])
+        pfa_onehot = self._apply_onehot(df)
+        
         # Sum learning state (previous wins and fails)
         if learning_state:
             for idx, skill in enumerate(self.skills):
                 pfa_onehot["wins_%s" % skill] += learning_state[idx][0]
                 pfa_onehot["fails_%s" % skill] += learning_state[idx][1]
+
+        pfa_onehot = pfa_onehot.groupby(['index']).sum().astype(np.uint16
+            ).astype({'outcome': 'bool'}).astype({'outcome': 'uint8'})
         return pfa_onehot
 
     def _transform_data(self, data, q_matrix, past_questions=1,
