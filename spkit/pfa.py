@@ -333,10 +333,7 @@ class PFA(object):
 
         if self.lib == "sklearn":
             model = algorithm_lookup[self.lib](**params)
-            start = time.time()
             model.fit(X, y)
-            end = time.time()
-            delta = end - start
             self.params["weights"] = np.concatenate((model.intercept_.reshape(-1,1),
                                           model.coef_), axis=1)
         elif self.lib == "sm":
