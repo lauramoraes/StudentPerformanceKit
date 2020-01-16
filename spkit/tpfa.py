@@ -8,6 +8,7 @@ from spkit.pfa import (PFA, default_params, algorithm_lookup,
                        sm_regularized_params)
 from datetime import datetime, timedelta
 from statistics import median
+from multiprocessing import Pool, cpu_count
 
 # Step function to categorize time.
 TIME_STEPS = [timedelta(minutes=15), timedelta(days=1)]
@@ -144,7 +145,7 @@ class TPFA(PFA):
 
         # Create dataframe from PFA data
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins", "fails",
-                                             "outcome"])
+                                             "time", "outcome"])
                                              
         # Create onehot representation for skills
         skills, skills_onehot = self._onehot_encoder(df, "skill")
@@ -154,7 +155,7 @@ class TPFA(PFA):
 
         # Create onehot representation for wins, fails and time
         onehot_cols = ["skills_%d" % skill for skill in skills]
-        self.cols=["wins", "fails"]
+        self.cols=["wins", "fails", "time"]
         onehot_cols += self._create_onehot_cols(self.cols)
         self.onehot_cols = onehot_cols
         
@@ -191,7 +192,7 @@ class TPFA(PFA):
             'outcome': 'bool'}).astype({'outcome': 'uint8'})        
         return pfa_onehot
 
-    def fit(self, data, q_matrix, **kwargs):
+    def fit(self, data, q_matrix, n_jobs_transform=None, **kwargs):
         """ Fit PFA model to data.
 
 
@@ -228,7 +229,7 @@ class TPFA(PFA):
         """
         # Transform data to PFA format
         self.params = {}
-        data = self._transform_data(data, q_matrix)
+        data = self._transform_data(data, q_matrix, n_jobs_transform)
 
         # Fit model
         cols = self.onehot_cols
@@ -289,10 +290,11 @@ class TPFA(PFA):
             outcome 0 (incorrect) and column 1 to outcome 1 (correct)
         """
         # Transform data to PFA format
-        data, cols = self._transform_student_data(data, q_matrix,
+        data = self._transform_student_data(data, q_matrix,
                                                   learning_state)
 
         # Fit model
+        cols = self.onehot_cols
         X_not_norm = data[cols]
         X = self.scaler.transform(data[cols])
         self.outcomes = data['outcome']
