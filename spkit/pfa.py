@@ -8,6 +8,7 @@ import copy
 from multiprocessing import Pool, cpu_count
 #from psutil import virtual_memory
 from math import ceil
+import time
 
 algorithm_lookup = {
     "sklearn": LogisticRegression,
@@ -119,23 +120,16 @@ class PFA(object):
         
     def _apply_onehot(self, data):
         """ Transform data to its onehot format """
-        #print("Applying to %d rows" % data.shape[0])
         skills = self.skills
         skills_onehot = self.params["skills_onehot"]
         onehot_array = data.apply(self._create_onehot, axis=1,
                                   args=(skills, skills_onehot, self.cols))
-        # print("Onehot created")
         data = data.drop(columns=['skill'] + self.cols)
-        # print("Cols dropped")
         data = data.reset_index(drop=True)
-        # print("Index reseted")
         onehot_df = pd.DataFrame(onehot_array.tolist(), columns=self.onehot_cols, 
                                  dtype=np.uint16)
-        # print("Extended df")
         data = pd.concat((data, onehot_df), axis=1)
-        # print("Concat df")
         data = self._change_type(data, 'index')
-        # print("DONE")
         return data
         
     def _onehot_encoder(self, data, col):
@@ -208,7 +202,7 @@ class PFA(object):
             ).astype({'outcome': 'bool'}).astype({'outcome': 'uint8'})
         return pfa_onehot
 
-    def _transform_data(self, data, q_matrix, **kwargs):
+    def _transform_data(self, data, q_matrix, n_jobs_transform=None, **kwargs):
         """ Transform original data into PFA expected format. Calculates wins,
         fails, get skills and transform everything into one-hot variables """
         skills_count = {}
@@ -256,23 +250,16 @@ class PFA(object):
         self.onehot_cols = onehot_cols
         
         # Parallelize onehot transformation
-        n_jobs = kwargs.get("n_jobs", None)
-        if n_jobs:
-            if n_jobs == -1:
-                n_jobs = cpu_count()
-            splits = self._get_number_of_splits(df, n_jobs)
-            #splits = kwargs.get("splits", 800)
-            print("Using %d splits and %d jobs" % (splits, n_jobs))
-            # df_split = np.array_split(df, splits)
-            #print("Optimizing splits")
+        if n_jobs_transform:
+            if n_jobs_transform == -1:
+                n_jobs_transform = cpu_count()
+            splits = self._get_number_of_splits(df, n_jobs_transform)
+            print("Using %d splits and %d jobs" % (splits, n_jobs_transform))
             df_split = np.array_split(df, splits)
-            with Pool(n_jobs) as pool:
-                # a = pool.map(self._apply_onehot, df_split)
-                # return a
+            with Pool(n_jobs_transform) as pool:
                 pfa_onehot = pd.concat(pool.map(self._apply_onehot, df_split))
         else:
             pfa_onehot = self._apply_onehot(df)
-        print("BACK")
         return pfa_onehot
 
         # n_jobs_sum = kwargs.get("n_jobs_sum", None)
@@ -296,7 +283,7 @@ class PFA(object):
             'outcome': 'bool'}).astype({'outcome': 'uint8'})        
         return pfa_onehot
         
-    def fit(self, data, q_matrix, **kwargs):
+    def fit(self, data, q_matrix, n_jobs_transform=None, **kwargs):
         """ Fit PFA model to data.
 
 
@@ -333,13 +320,13 @@ class PFA(object):
         """
         # Transform data to PFA format
         self.params = {}
-        data = self._transform_data(data, q_matrix, **kwargs)
+        data = self._transform_data(data, q_matrix, n_jobs_transform)
 
         # Fit model
         cols = self.onehot_cols
         X = data[cols]
         y = data['outcome']
-
+        
         # Fit data
         params = copy.deepcopy(default_params[self.lib])
         params.update(kwargs)
@@ -347,7 +334,10 @@ class PFA(object):
 
         if self.lib == "sklearn":
             model = algorithm_lookup[self.lib](**params)
+            start = time.time()
             model.fit(X, y)
+            end = time.time()
+            delta = end - start
             self.params["weights"] = np.concatenate((model.intercept_.reshape(-1,1),
                                           model.coef_), axis=1)
         elif self.lib == "sm":
