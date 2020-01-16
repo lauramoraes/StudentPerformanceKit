@@ -202,7 +202,7 @@ class PFA(object):
             ).astype({'outcome': 'bool'}).astype({'outcome': 'uint8'})
         return pfa_onehot
 
-    def _transform_data(self, data, q_matrix, n_jobs_transform=None, **kwargs):
+    def _transform_data(self, data, q_matrix, n_jobs_transform=None):
         """ Transform original data into PFA expected format. Calculates wins,
         fails, get skills and transform everything into one-hot variables """
         skills_count = {}
@@ -260,7 +260,6 @@ class PFA(object):
                 pfa_onehot = pd.concat(pool.map(self._apply_onehot, df_split))
         else:
             pfa_onehot = self._apply_onehot(df)
-        return pfa_onehot
 
         # n_jobs_sum = kwargs.get("n_jobs_sum", None)
         # if n_jobs_sum:
