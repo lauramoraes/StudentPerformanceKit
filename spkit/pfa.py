@@ -45,10 +45,10 @@ class PFA(object):
         # Params
         self.params = None
         self.skills = None
-        
+
         # Student learning state
-        self.learning_state = []
-        
+        self.learning_state = {}
+
         # Evaluation metrics
         self.n_skills = 0
         self.n_questions = 0
@@ -69,7 +69,7 @@ class PFA(object):
             onehot_col = row[col]*skills_onehot[idx][0]
             new_row = np.concatenate((new_row, onehot_col))
         return new_row
-    
+
     @staticmethod
     def _change_type(data, col):
         mx = data[col].max()
@@ -93,17 +93,17 @@ class PFA(object):
             elif mn > np.iinfo(np.int64).min and mx < np.iinfo(np.int64).max:
                 data[col] = data[col].astype(np.int64)
         return data
-        
+
     @staticmethod
     def _sum_df(data):
         return data[1].sum()
-    
+
     def _get_number_of_splits(self, df, cpus):
         #available_mem = virtual_memory().available
         #one_row_mem = df.iloc[0].memory_usage()*len(self.onehot_cols)
         #rows_per_split = available_mem * 0.8 / (cpus * one_row_mem)
         #splits = ceil(df.shape[0]/rows_per_split)
-        
+
         #if splits < cpus:
         #    return min(cpus, df.shape[0])
         #else:
@@ -111,13 +111,13 @@ class PFA(object):
         rows_per_split = MAX_CELLS/len(self.onehot_cols)
         splits = ceil(df.shape[0]/rows_per_split)
         return splits
-    
+
     def _create_onehot_cols(self, cols=["wins", "fails"]):
         onehot_cols = []
         for col in cols:
             onehot_cols += ["%s_%d" % (col, skill) for skill in self.skills]
         return onehot_cols
-        
+
     def _apply_onehot(self, data):
         """ Transform data to its onehot format """
         skills = self.skills
@@ -126,12 +126,12 @@ class PFA(object):
                                   args=(skills, skills_onehot, self.cols))
         data = data.drop(columns=['skill'] + self.cols)
         data = data.reset_index(drop=True)
-        onehot_df = pd.DataFrame(onehot_array.tolist(), columns=self.onehot_cols, 
+        onehot_df = pd.DataFrame(onehot_array.tolist(), columns=self.onehot_cols,
                                  dtype=np.uint16)
         data = pd.concat((data, onehot_df), axis=1)
         data = self._change_type(data, 'index')
         return data
-        
+
     def _onehot_encoder(self, data, col):
         """ Transform PFA data to its onehot version where each columns
         represents a skill, wins and fails for the corresponding skills. A
@@ -158,7 +158,7 @@ class PFA(object):
         skills_onehot = enc.fit_transform(skills_array)
         self.params["skills_onehot"] = skills_onehot
         return skills_onehot
-		
+
     def _transform_student_data(self, data, q_matrix, learning_state=None):
         """ Transform original data into PFA expected format. Calculates wins,
         fails, get skills and transform everything into one-hot variables """
@@ -191,13 +191,13 @@ class PFA(object):
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins",
                                              "fails", "outcome"])
         pfa_onehot = self._apply_onehot(df)
-        
+
         # Sum learning state (previous wins and fails)
         if learning_state:
             for idx, skill in enumerate(self.skills):
                 pfa_onehot["wins_%s" % skill] += learning_state[idx][0]
                 pfa_onehot["fails_%s" % skill] += learning_state[idx][1]
-                
+
         pfa_onehot = pfa_onehot.groupby(['index']).sum().astype(np.uint16
             ).astype({'outcome': 'bool'}).astype({'outcome': 'uint8'})
         return pfa_onehot
@@ -236,7 +236,7 @@ class PFA(object):
         # Create dataframe from PFA data
         df = pd.DataFrame(pfa_data, columns=["index", "skill", "wins", "fails",
                                              "outcome"])
-                                             
+
         # Create onehot representation for skills
         skills, skills_onehot = self._onehot_encoder(df, "skill")
         self.skills = skills
@@ -248,7 +248,7 @@ class PFA(object):
         self.cols=["wins", "fails"]
         onehot_cols += self._create_onehot_cols(self.cols)
         self.onehot_cols = onehot_cols
-        
+
         # Parallelize onehot transformation
         if n_jobs_transform:
             if n_jobs_transform == -1:
@@ -273,15 +273,15 @@ class PFA(object):
         # else:
             # # Group in one row questions with multiple skills
             # pfa_onehot = pfa_onehot.groupby(['index']).sum()
-            
+
         pfa_onehot = pfa_onehot.groupby(['index']).sum()
-        
+
         # Change column types to save space and to count just once for outcome result
         #pfa_onehot = pfa_onehot.drop(columns=['skill'] + self.cols)
         pfa_onehot = pfa_onehot.astype(np.uint16).astype({
-            'outcome': 'bool'}).astype({'outcome': 'uint8'})        
+            'outcome': 'bool'}).astype({'outcome': 'uint8'})
         return pfa_onehot
-        
+
     def fit(self, data, q_matrix, n_jobs_transform=None, **kwargs):
         """ Fit PFA model to data.
 
@@ -325,7 +325,7 @@ class PFA(object):
         cols = self.onehot_cols
         X = data[cols]
         y = data['outcome']
-        
+
         # Fit data
         params = copy.deepcopy(default_params[self.lib])
         params.update(kwargs)
@@ -350,7 +350,7 @@ class PFA(object):
                 model = model.fit_regularized(**reg_params)
             else:
                 model = model.fit()
-            
+
             self.params["weights"] = model.params.values.reshape(1,-1)
 
         self.model = model
@@ -385,7 +385,7 @@ class PFA(object):
         X = data[cols]
         self.outcomes = data['outcome']
         self.n_questions = self.outcomes.shape[0]
-        
+
         if self.lib == "sklearn":
             self.outcome_prob = self.model.predict_proba(X)
         elif self.lib == "sm":
@@ -394,17 +394,20 @@ class PFA(object):
             self.outcome_prob = np.zeros((X.shape[0], 2))
             self.outcome_prob[:,1] = self.model.predict(X).values
             self.outcome_prob[:,0] = 1 - self.outcome_prob[:,1]
-            
+
         # Update student learning state
-        for skill in self.skills:
+        learning_state = {}
+        for idx, skill in enumerate(self.skills):
             worked_skill = X[X['skills_%s' % skill] == 1]
-            if not worked_skill.empty: 
+            if not worked_skill.empty:
                 wins = X[X['skills_%s' % skill] == 1]['wins_%s' % skill].tail(1).iloc[0]
                 fails = X[X['skills_%s' % skill] == 1]['fails_%s' % skill].tail(1).iloc[0]
             else:
                 wins = 0
                 fails = 0
-    
+            learning_state[idx] = (wins, fails)
+        self.learning_state = learning_state
+
         return self.outcome_prob
 
     def predict_proba(self, data, q_matrix, learning_state=[]):
@@ -464,7 +467,7 @@ class PFA(object):
 
         """
         y = self.outcomes
-        
+
         # LL
         self.loglikelihood = (np.log(self.outcome_prob[range(y.shape[0]),y]))
 
@@ -505,7 +508,7 @@ class PFA(object):
         """
         self.params = params
         return self
-       
+
     def get_learning_state(self):
         """ Return last predict student learning state.
 
